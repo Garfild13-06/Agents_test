@@ -1,10 +1,9 @@
 """Pydantic models for request/response validation."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from uuid import UUID
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, PositiveFloat, field_validator
 
 
 class WeatherResponse(BaseModel):
@@ -54,16 +53,19 @@ class RandomQuoteResponse(BaseModel):
 class ValidationRequest(BaseModel):
     """Request model for validation endpoint."""
 
-    name: str = Field(min_length=1, max_length=100)
-    age: int = Field(ge=0, le=150)
-    email: str = Field(pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-    tags: List[str] = Field(default_factory=list, max_length=10)
+    name: Annotated[str, Field(min_length=1, max_length=100)]
+    age: Annotated[int, Field(ge=0, le=150)]
+    email: EmailStr
+    tags: Annotated[list[str], Field(default_factory=list, max_length=10)]
 
     @field_validator("tags")
     @classmethod
-    def validate_tags(cls, v: List[str]) -> List[str]:
-        """Validate that tags are not empty strings."""
-        return [tag.strip() for tag in v if tag.strip()]
+    def validate_tags(cls, tags: list[str]) -> list[str]:
+        """Strip whitespace and enforce the max-length constraint after cleanup."""
+        cleaned = [tag.strip() for tag in tags if tag.strip()]
+        if len(cleaned) > 10:
+            raise ValueError("No more than 10 non-empty tags allowed.")
+        return cleaned
 
 
 class ValidationResponse(BaseModel):
@@ -71,15 +73,17 @@ class ValidationResponse(BaseModel):
 
     success: bool
     message: str
-    processed_data: Dict[str, Any]
+    processed_data: dict[str, Any]
 
 
 class ProcessDataRequest(BaseModel):
     """Request model for data processing endpoint."""
 
-    numbers: List[float] = Field(min_length=1, max_length=100)
-    operation: str = Field(pattern="^(sum|average|max|min)$")
-    multiplier: Optional[float] = Field(default=1.0, gt=0)
+    numbers: Annotated[list[float], Field(min_length=1, max_length=100)]
+    operation: Literal["sum", "average", "max", "min"]
+    multiplier: PositiveFloat = Field(
+        default=1.0, description="Multiplier applied to the calculated value."
+    )
 
 
 class ProcessDataResponse(BaseModel):
@@ -104,7 +108,6 @@ class StatsResponse(BaseModel):
     """Statistics response model."""
 
     total_requests: int
-    endpoint_counts: Dict[str, int]
+    endpoint_counts: dict[str, int]
     average_response_time_ms: float
     cache_size: int
-

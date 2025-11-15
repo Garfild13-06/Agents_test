@@ -5,15 +5,15 @@ import random
 import sys
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Literal
 from uuid import uuid4
 
 import httpx
 
 
 # In-memory storage for demo purposes
-_in_memory_cache: Dict[str, Dict[str, Any]] = {}
-_request_stats: Dict[str, int] = {}
+_in_memory_cache: dict[str, dict[str, Any]] = {}
+_request_stats: dict[str, int] = {}
 _start_time = time.time()
 
 
@@ -51,7 +51,7 @@ QUOTES = [
 ]
 
 
-async def get_weather_async(city: str, timeout: float = 5.0) -> Dict[str, Any]:
+async def get_weather_async(city: str, timeout: float = 5.0) -> dict[str, Any]:
     """
     Fetch weather data for a city (async mock implementation).
 
@@ -108,7 +108,7 @@ def get_currency_rate(base: str, target: str) -> float:
     return round(random.uniform(0.5, 2.0), 4)
 
 
-def get_random_joke() -> Dict[str, Any]:
+def get_random_joke() -> dict[str, Any]:
     """
     Get a random joke.
 
@@ -118,7 +118,7 @@ def get_random_joke() -> Dict[str, Any]:
     return random.choice(JOKES)
 
 
-def get_system_info() -> Dict[str, Any]:
+def get_system_info() -> dict[str, Any]:
     """
     Get system information.
 
@@ -133,7 +133,7 @@ def get_system_info() -> Dict[str, Any]:
     }
 
 
-def get_random_quote() -> Dict[str, Any]:
+def get_random_quote() -> dict[str, Any]:
     """
     Get a random quote.
 
@@ -163,7 +163,7 @@ def update_request_stats(endpoint: str) -> None:
     _request_stats[endpoint] = _request_stats.get(endpoint, 0) + 1
 
 
-def get_statistics() -> Dict[str, Any]:
+def get_statistics() -> dict[str, Any]:
     """
     Get request statistics.
 
@@ -180,7 +180,7 @@ def get_statistics() -> Dict[str, Any]:
     }
 
 
-def get_cache_value(key: str) -> Optional[Dict[str, Any]]:
+def get_cache_value(key: str) -> dict[str, Any] | None:
     """
     Get value from in-memory cache.
 
@@ -193,7 +193,7 @@ def get_cache_value(key: str) -> Optional[Dict[str, Any]]:
     return _in_memory_cache.get(key)
 
 
-def set_cache_value(key: str, value: Any) -> Dict[str, Any]:
+def set_cache_value(key: str, value: Any) -> dict[str, Any]:
     """
     Set value in in-memory cache.
 
@@ -213,7 +213,9 @@ def set_cache_value(key: str, value: Any) -> Dict[str, Any]:
     return entry
 
 
-def process_numbers(numbers: list[float], operation: str, multiplier: float = 1.0) -> float:
+def process_numbers(
+    numbers: list[float], operation: Literal["sum", "average", "max", "min"], multiplier: float = 1.0
+) -> float:
     """
     Process a list of numbers with specified operation.
 
@@ -224,9 +226,6 @@ def process_numbers(numbers: list[float], operation: str, multiplier: float = 1.
 
     Returns:
         Processed result
-
-    Raises:
-        ValueError: If operation is invalid
     """
     if operation == "sum":
         result = sum(numbers)
@@ -234,15 +233,13 @@ def process_numbers(numbers: list[float], operation: str, multiplier: float = 1.
         result = sum(numbers) / len(numbers)
     elif operation == "max":
         result = max(numbers)
-    elif operation == "min":
+    else:  # operation == "min" (guaranteed by Literal type)
         result = min(numbers)
-    else:
-        raise ValueError(f"Unknown operation: {operation}")
 
     return round(result * multiplier, 2)
 
 
-async def fetch_external_data_mock(url: str, timeout: float = 5.0) -> Dict[str, Any]:
+async def fetch_external_data_mock(url: str, timeout: float = 5.0) -> dict[str, Any]:
     """
     Mock external HTTP request using httpx (for demo purposes).
 

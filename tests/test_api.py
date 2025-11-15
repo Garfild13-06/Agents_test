@@ -215,7 +215,8 @@ def test_process_endpoint_invalid_operation() -> None:
         "operation": "invalid_op",
     }
     response = client.post("/api/process", json=request_data)
-    assert response.status_code == 400
+    # Pydantic validation error for Literal type returns 422
+    assert response.status_code == 422
 
 
 def test_cache_get_missing() -> None:
